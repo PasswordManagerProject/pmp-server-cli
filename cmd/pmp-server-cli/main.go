@@ -1,14 +1,18 @@
 package main
 
 import (
+	"database/sql"
 	"log"
-	"pmp-server/internal"
+	"pmp-server/internal/DBHandle"
 )
 
 func main() {
-	if internal.DBInit() == false {
+	var db *sql.DB
+
+	if DBHandle.DBInit(&db) == false {
 		log.Fatal("Failure in DB initializaion.")
 		return
 	}
 
+	DBHandle.CloseDB(&db)
 }
