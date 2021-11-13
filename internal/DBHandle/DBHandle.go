@@ -117,7 +117,7 @@ func CloseDB(db **sql.DB) bool {
 	err = (*db).Close()
 
 	if err != nil {
-		log.Fatal(err)
+		log.Print(err)
 		return false
 	}
 
@@ -129,7 +129,7 @@ func Insert(db **sql.DB, data PassData.PassData) bool {
 	var err error
 
 	if !PassData.IsInit(data) {
-		log.Fatal("Uninitalized struct provided.")
+		log.Print("Uninitalized struct provided to Insert method.")
 		return false
 	}
 
@@ -143,7 +143,7 @@ func Insert(db **sql.DB, data PassData.PassData) bool {
 
 	_, err = (*db).Exec(sqlStmt)
 	if err != nil {
-		log.Fatal(err)
+		log.Print(err)
 		return false
 	}
 
@@ -170,7 +170,32 @@ func Update(db **sql.DB, ID string, newPass string) bool {
 
 	_, err = (*db).Exec(sqlStmt)
 	if err != nil {
-		log.Fatal(err)
+		log.Print(err)
+		return false
+	}
+
+	return true
+}
+
+func Delete(db **sql.DB, ID string) bool {
+	var sqlStmt string
+	var err error
+	var dummy PassData.PassData
+
+	if !Query(db, ID, &dummy) {
+		return false
+	}
+
+	sqlStmt = `
+    DELETE FROM PASSWORDS
+    WHERE ID = '%s';
+    `
+
+	sqlStmt = fmt.Sprintf(sqlStmt, ID)
+
+	_, err = (*db).Exec(sqlStmt)
+	if err != nil {
+		log.Print(err)
 		return false
 	}
 
@@ -191,7 +216,7 @@ func Query(db **sql.DB, ID string, data *PassData.PassData) bool {
 	defer rows.Close()
 
 	if err != nil {
-		log.Fatal(err)
+		log.Print(err)
 		return false
 	}
 
@@ -205,7 +230,7 @@ func Query(db **sql.DB, ID string, data *PassData.PassData) bool {
 	}
 	err = rows.Err()
 	if err != nil {
-		log.Fatal(err)
+		log.Print(err)
 		return false
 	}
 
@@ -223,14 +248,14 @@ func List(db **sql.DB) []string {
 	defer rows.Close()
 
 	if err != nil {
-		log.Fatal(err)
+		log.Print(err)
 		return IDList
 	}
 
 	for rows.Next() {
 		err = rows.Scan(&tempVal)
 		if err != nil {
-			log.Fatal(err)
+			log.Print(err)
 			return IDList
 		}
 		IDList = append(IDList, tempVal)
@@ -238,7 +263,7 @@ func List(db **sql.DB) []string {
 
 	err = rows.Err()
 	if err != nil {
-		log.Fatal(err)
+		log.Print(err)
 		return IDList
 	}
 
@@ -255,12 +280,17 @@ func Count(db **sql.DB) int {
 	defer rows.Close()
 
 	if err != nil {
-		log.Fatal(err)
+		log.Print(err)
 		return -1
 	}
 
 	for rows.Next() {
 		err = rows.Scan(&num)
+	}
+
+	if err != nil {
+		log.Print(err)
+		return -1
 	}
 
 	return num
